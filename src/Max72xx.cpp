@@ -83,6 +83,20 @@ void Max72xx::set_intesity(int addr, int intensity) {
         spi_transfer(addr,OP_INTENSITY,intensity);
 }
 
+void Max72xx::clear_display(int addr) {
+    int offset;
+
+    CHECK_ADDRESS_RANGE(addr,max_devices);
+
+    offset=addr*8;
+
+    for (int i = 0; i < 8; i++){
+        stat[offset+i]=0;
+        spi_transfer(addr,i+1,stat[offset+i]);
+    }
+
+}
+
 void Max72xx::set_LED(int addr, int row, int col, bool state) {
     int offset;
     byte val = 0x00;
