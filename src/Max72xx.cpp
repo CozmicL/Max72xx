@@ -35,7 +35,7 @@ Max72xx::Max72xx(int dataPin,int clkPin, int csPin, int numDevices){
     SPI_CLK=clkPin;
     SPI_CS=csPin;
     //this is because the limit of the Max72xx
-    if(numDevices<=0 || numDevices>=8)
+    if(numDevices<=0 || numDevices>8)
         numDevices = 8;
     
     max_devices = numDevices;
@@ -43,7 +43,7 @@ Max72xx::Max72xx(int dataPin,int clkPin, int csPin, int numDevices){
 
     pinMode(SPI_MOSI, OUTPUT);
     pinMode(SPI_CLK,OUTPUT);
-    pinMode(SPI_CLK,OUTPUT);
+    pinMode(SPI_CS,OUTPUT);
 
     digitalWrite(SPI_CS, HIGH);
 
@@ -68,16 +68,20 @@ int Max72xx::get_device_count() {
 }
 
 void Max72xx::power_saving(int addr, bool status){
-    CHECK_ADDRESS_RANGE(addr,max_devices);
+    if ((addr) < 0 || (addr) >= (max_devices))
+        return;
 
     if(status)
         spi_transfer(addr,OP_SHUTDOWN,0);
     else
-        spi_transfer(addr,OP_SHUTDOWN,1);
+	spi_transfer(addr,OP_SHUTDOWN,1);
+
+        
 }
 
 void Max72xx::set_intesity(int addr, int intensity) {
-    CHECK_ADDRESS_RANGE(addr,max_devices);
+    if ((addr) < 0 || (addr) >= (max_devices))
+        return;
     
     if(intensity >= 0 && intensity < 16)
         spi_transfer(addr,OP_INTENSITY,intensity);
@@ -86,7 +90,8 @@ void Max72xx::set_intesity(int addr, int intensity) {
 void Max72xx::clear_display(int addr) {
     int offset;
 
-    CHECK_ADDRESS_RANGE(addr,max_devices);
+    if ((addr) < 0 || (addr) >= (max_devices))
+        return;
 
     offset=addr*8;
 
@@ -101,14 +106,18 @@ void Max72xx::set_LED(int addr, int row, int col, bool state) {
     int offset;
     byte val = 0x00;
 
-    CHECK_ADDRESS_RANGE(addr,max_devices);
+    if ((addr) < 0 || (addr) >= (max_devices))
+        return;
 
-    CHECK_ROW(row)
-    CHECK_COL(col)
+    if(row<0 || row>7 || col<0 || col>7)
+        return;
+
+
     
     offset = addr*8;
 
     val=B10000000 >> col;
+Serial.println(val);
     if(state)
         //the '|' is an bitwise OR opp
         stat[offset+row] = stat[offset+row]|val;
@@ -118,11 +127,13 @@ void Max72xx::set_LED(int addr, int row, int col, bool state) {
         //the '&' is a AND opp
         stat[offset+row] = stat[offset+row]&val;
     }
+	spi_transfer(addr, row+1,stat[offset+row]);
 }
 
 void Max72xx::setScanLimit(int addr, int limit){
-    CHECK_ADDRESS_RANGE(addr,max_devices);
-
+    if ((addr) < 0 || (addr) >= (max_devices))
+        return;
+	Serial.println("PLdpal");
     if(limit>=0 && limit<8)
         spi_transfer(addr,OP_SCANLIMIT,limit);
 }
