@@ -117,7 +117,7 @@ void Max72xx::set_LED(int addr, int row, int col, bool state) {
     offset = addr*8;
 
     val=B10000000 >> col;
-Serial.println(val);
+
     if(state)
         //the '|' is an bitwise OR opp
         stat[offset+row] = stat[offset+row]|val;
@@ -133,7 +133,6 @@ Serial.println(val);
 void Max72xx::setScanLimit(int addr, int limit){
     if ((addr) < 0 || (addr) >= (max_devices))
         return;
-	Serial.println("PLdpal");
     if(limit>=0 && limit<8)
         spi_transfer(addr,OP_SCANLIMIT,limit);
 }
