@@ -16,6 +16,9 @@ bool right = false;
 bool up = false;
 bool down = false;
 
+int rx = random(0,7);
+int ry = random(0,7);
+int rp = random(0,3);
 
 
 void setup() {
@@ -69,10 +72,15 @@ void loop() {
   int c_i = i;
   int c_j = j;
 
-  generate_fruit();
+  if (i == rx && j == ry && rp == pannel){
+
+    d.set_LED(rp, rx, ry, true);
+    generate_fruit();
+  }
+  
   //move_right();
   //Serial.println(i);
-  delay(50);
+  delay(100);
   d.set_LED(pannel, j, i, true);
   d.set_LED(c_pan, c_j, c_i, false);
 
@@ -134,30 +142,26 @@ void setup_board() {
   pinMode(up_button, INPUT);
   pinMode(down_button, INPUT);
 
-  generate_fruit();
+  first_fruit();
+}
+
+void first_fruit(){
+
+  d.set_LED(rp, rx, ry, true);
+  
 }
 
 
+
 void generate_fruit(){
-  int rx = random(0,7);
-  int ry = random(0,7);
-
-  int rp = random(0,3);
-
   if (i == rx && j == ry && rp == pannel){
-    Serial.println("Nom");
+    rx = random(0,7);
+    ry = random(0,7);
+
+    
+    rp = random(0,3);
+    d.set_LED(rp, rx, ry, true);
+    generate_fruit();
   }
-  else{
-    Serial.println(i);
-    Serial.print(" ");
-    Serial.print(rx);
-    Serial.println(j);
-    Serial.print(" ");
-    Serial.print(ry);
-    Serial.println(rp);
-    Serial.print(" ");
-    Serial.print(pannel);
-  }
-  
-  d.set_LED(rp, rx, ry, true);
+
 }
