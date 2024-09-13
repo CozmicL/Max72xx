@@ -62,7 +62,7 @@ class Max72xx {
         ## Returns:
         - the number of devices attached
         */
-        int get_device_count();
+        int get_device_count() const;
 
         /*
         # puts the device into power saving mode
@@ -78,7 +78,7 @@ class Max72xx {
         - addr: The adrress of the display
         - intensity: the brightness of the display
         */
-        void set_intesity(int addr, int intensity);
+        void set_intensity(int addr, int intensity);
 
         /*
         # Turns off all LEDS
