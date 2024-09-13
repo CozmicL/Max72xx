@@ -33,14 +33,20 @@ enum OpCodes {
     if(col < 0 || col > 7) \
         return;
 
-Max72xx::Max72xx(int dataPin, int clkPin, int csPin, int numDevices)
-    : SPI_MOSI(dataPin), SPI_CLK(clkPin), SPI_CS(csPin)
-{
-    max_devices = numDevices < 1 ? 1 : (numDevices > 8 ? 8 : numDevices);
+Max72xx::Max72xx(int dataPin,int clkPin, int csPin, int numDevices){
+    SPI_MOSI=dataPin;
+    SPI_CLK=clkPin;
+    SPI_CS=csPin;
+    //this is because the limit of the Max72xx
+    if(numDevices<=0 || numDevices>=8)
+        numDevices = 8;
+    
+    max_devices = numDevices;
+
 
     pinMode(SPI_MOSI, OUTPUT);
-    pinMode(SPI_CLK, OUTPUT);
-    pinMode(SPI_CS, OUTPUT);
+    pinMode(SPI_CLK,OUTPUT);
+    pinMode(SPI_CLK,OUTPUT);
 
     digitalWrite(SPI_CS, HIGH);
 
@@ -63,21 +69,26 @@ int Max72xx::get_device_count() const {
     return max_devices;
 }
 
-void Max72xx::power_saving(int addr, bool status) {
-    CHECK_ADDRESS_RANGE(addr, max_devices);
+void Max72xx::power_saving(int addr, bool status){
+    CHECK_ADDRESS_RANGE(addr,max_devices);
 
-    spi_transfer(addr, OpCodes::OP_SHUTDOWN, status ? 0 : 1);
+    if(status)
+        spi_transfer(addr,OP_SHUTDOWN,0);
+    else
+        spi_transfer(addr,OP_SHUTDOWN,1);
 }
 
-void Max72xx::set_intensity(int addr, int intensity) {
-    CHECK_ADDRESS_RANGE(addr, max_devices);
+void Max72xx::set_intesity(int addr, int intensity) {
+    CHECK_ADDRESS_RANGE(addr,max_devices);
     
     if(intensity >= 0 && intensity < 16)
         spi_transfer(addr, OpCodes::OP_INTENSITY, intensity);
 }
 
 void Max72xx::clear_display(int addr) {
-    CHECK_ADDRESS_RANGE(addr, max_devices);
+    int offset;
+
+    CHECK_ADDRESS_RANGE(addr,max_devices);
 
     int offset = addr * 8;
 
@@ -88,27 +99,33 @@ void Max72xx::clear_display(int addr) {
 }
 
 void Max72xx::set_LED(int addr, int row, int col, bool state) {
-    CHECK_ADDRESS_RANGE(addr, max_devices);
+    int offset;
+    byte val = 0x00;
+
+    CHECK_ADDRESS_RANGE(addr,max_devices);
+
     CHECK_ROW(row)
     CHECK_COL(col)
     
-    int offset = addr * 8;
-    byte mask = 0x80 >> col;
+    offset = addr*8;
 
-    if (state)
-        stat[offset + row] |= mask;
-    else
-        stat[offset + row] &= ~mask;
-
-    // Update the display
-    spi_transfer(addr, row + 1, stat[offset + row]);
+    val=B10000000 >> col;
+    if(state)
+        //the '|' is an bitwise OR opp
+        stat[offset+row] = stat[offset+row]|val;
+    else{
+        //the'=~' is a NOT opp
+        val=~val;
+        //the '&' is a AND opp
+        stat[offset+row] = stat[offset+row]&val;
+    }
 }
 
-void Max72xx::setScanLimit(int addr, int limit) {
-    CHECK_ADDRESS_RANGE(addr, max_devices);
+void Max72xx::setScanLimit(int addr, int limit){
+    CHECK_ADDRESS_RANGE(addr,max_devices);
 
-    if(limit >= 0 && limit < 8)
-        spi_transfer(addr, OpCodes::OP_SCANLIMIT, limit);
+    if(limit>=0 && limit<8)
+        spi_transfer(addr,OP_SCANLIMIT,limit);
 }
 
 void Max72xx::spi_transfer(int addr, volatile byte op, volatile byte data) {
